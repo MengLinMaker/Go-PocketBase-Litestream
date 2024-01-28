@@ -1,23 +1,19 @@
-exec: /server.bin serve --http="127.0.0.1:8080"
+exec: /server.bin serve --http="0.0.0.0:8080"
 dbs:
   - path: /db/data.db
     replicas:
       - name: bucket_replica
         type: s3
-        endpoint: ${LITESTREAM_ENDPOINT}
-        bucket: ${LITESTREAM_BUCKET}
-        access-key-id: $LITESTREAM_ACCESS_KEY_ID
-        secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
+        endpoint: ${S3_ENDPOINT}
+        bucket: ${S3_DATA_BUCKET}
         skip-verify: true
         sync-interval: 60s
   - path: /db/logs.db
     replicas:
       - name: bucket_replica
         type: s3
-        endpoint: ${LITESTREAM_ENDPOINT}
-        bucket: ${LITESTREAM_BUCKET}
-        access-key-id: $LITESTREAM_ACCESS_KEY_ID
-        secret-access-key: $LITESTREAM_SECRET_ACCESS_KEY
+        endpoint: ${S3_ENDPOINT}
+        bucket: ${S3_LOGS_BUCKET}
         skip-verify: true
         sync-interval: 60s
 logging:

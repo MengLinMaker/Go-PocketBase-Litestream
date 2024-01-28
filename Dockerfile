@@ -25,8 +25,9 @@ FROM busybox:1.36.1 AS final
 # Specify backup location secret
 ENV LITESTREAM_ACCESS_KEY_ID \
     LITESTREAM_SECRET_ACCESS_KEY \
-    LITESTREAM_ENDPOINT \
-    LITESTREAM_BUCKET \
+    S3_ENDPOINT \
+    S3_DATA_BUCKET \
+    S3_LOGS_BUCKET \
     STAGE
 
 COPY --from=build /lib/**/libdl.so.2 /lib/libdl.so.2
