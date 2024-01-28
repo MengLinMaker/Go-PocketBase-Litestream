@@ -1,0 +1,5 @@
+# Do not include database
+db
+
+.env
+.DS_Store
