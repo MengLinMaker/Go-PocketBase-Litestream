@@ -2,9 +2,8 @@
 set +e
 
 echo "Restoring database"
-rm -r /db
-litestream restore -if-replica-exists /db/data.db
-litestream restore -if-replica-exists /db/logs.db
+litestream restore -if-db-not-exists -if-replica-exists /db/data.db
+litestream restore -if-db-not-exists -if-replica-exists /db/logs.db
 
 if [ "$STAGE" == "PROD" ]
 then
