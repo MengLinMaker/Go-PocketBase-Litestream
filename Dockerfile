@@ -12,12 +12,10 @@ RUN CPU_ARCHITECTURE="$(arch)" && \
     apt install /litestream.deb
 
 # Build Golang app with dependencies
-COPY src /
-RUN export CGO_ENABLED=1 && \
-    export GO111MODULE=on && \
-    export GOPROXY=https://proxy.golang.org && \
-    export GOSUMDB=sum.golang.org && \
+COPY src/go.mod src/go.sum /
+RUN export GOPROXY=https://proxy.golang.org && \
     go mod download -x
+COPY src /
 RUN go build -x -o /server.bin /
 
 # Minimise final stage docker image for production
