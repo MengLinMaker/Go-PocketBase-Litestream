@@ -1,39 +1,37 @@
-# fly.toml file generated for easy copying into your project
+# fly.toml app configuration file generated for go-pocketbase-litestream on 2024-01-29T00:32:09+11:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "pocketbase-framework-litestream"
-kill_signal = "SIGINT"
-kill_timeout = 5
-processes = []
+app = "go-pocketbase-litestream"
+primary_region = "syd"
 
-[env]
-  # REPLICA_URL="s3://YOUR_S3_BUCKET_NAME/db"
+[[mounts]]
+  source = "db"
+  destination = "/db"
+  initial_size = "1GB"
+  auto_extend_size_threshold = 90
+  auto_extend_size_increment = "1GB"
+  auto_extend_size_limit = "500GB"
 
-[experimental]
-  allowed_public_ports = []
-  auto_rollback = true
-
-[[services]]
-  http_checks = []
+[http_service]
   internal_port = 8080
-  processes = ["app"]
-  protocol = "tcp"
-  script_checks = []
-  [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
-    type = "connections"
+  force_https = true
+  min_machines_running = 0
 
-  [[services.ports]]
-    force_https = true
-    handlers = ["http"]
-    port = 80
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
 
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
-
-  [[services.tcp_checks]]
+  [[http_service.checks]]
+    timeout = "5s"
     grace_period = "5s"
     interval = "15s"
-    restart_limit = 0
-    timeout = "5s"
+    method = "GET"
+    path = "/_/"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
