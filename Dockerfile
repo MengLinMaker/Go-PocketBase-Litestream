@@ -1,41 +1,40 @@
-FROM golang:1.19
+FROM bitnami/golang:1.21.6 as build
 
-WORKDIR /usr/src/app
+# Install Litestream for SQLite3 backup
+ARG LITESTREAM_RELEASES="https://github.com/benbjohnson/litestream/releases" \
+    LITESTREAM_VERSION="v0.3.13"
+RUN CPU_ARCHITECTURE="$(arch)" && \
+    echo "CPU Architecture:" $CPU_ARCHITECTURE && \
+    case $CPU_ARCHITECTURE in \
+        aarch64) curl -sL -o /litestream.deb "$LITESTREAM_RELEASES/download/$LITESTREAM_VERSION/litestream-$LITESTREAM_VERSION-linux-arm64.deb" ;; \
+        *) curl -sL -o /litestream.deb "$LITESTREAM_RELEASES/download/$LITESTREAM_VERSION/litestream-$LITESTREAM_VERSION-linux-amd64.deb" ;; \
+    esac && \
+    apt install /litestream.deb
 
-# Copy go files
-COPY go.mod go.sum main.go ./
+# Build Golang app with dependencies
+COPY src /
+RUN export CGO_ENABLED=1 && \
+    export GO111MODULE=on && \
+    export GOPROXY=https://proxy.golang.org && \
+    export GOSUMDB=sum.golang.org && \
+    go mod download -x
+RUN go build -x -o /server.bin /
 
-# Build the binary
-RUN go mod download && go mod verify
-RUN go build -v -o /usr/local/bin/app ./...
+# Minimise final stage docker image for production
+# Smallest glibc alternative to Apline
+FROM busybox:1.36.1 AS final
 
-# Set ENVs
-# Alternatively, you can pass in via `-e` flag to `docker run` like https://github.com/benbjohnson/litestream-docker-example
-# These are in the Dockerfile for simplicity of deploying
-ENV LITESTREAM_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxx
-ENV LITESTREAM_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-ENV REPLICA_URL="s3://YOUR_S3_BUCKET_NAME/db"
+# Specify backup location secret
+ENV LITESTREAM_ACCESS_KEY_ID \
+    LITESTREAM_SECRET_ACCESS_KEY \
+    LITESTREAM_ENDPOINT \
+    LITESTREAM_BUCKET \
+    STAGE
 
-# Download the static build of Litestream directly into the path & make it executable.
-# This is done in the builder and copied as the chmod doubles the size.
-# Note: You will want to mount your own Litestream configuration file at /etc/litestream.yml in the container.
-# Example: https://github.com/benbjohnson/litestream-docker-example or https://litestream.io/guides/docker/
-ADD https://github.com/benbjohnson/litestream/releases/download/v0.3.9/litestream-v0.3.9-linux-amd64-static.tar.gz /tmp/litestream.tar.gz
-RUN tar -C /usr/local/bin -xzf /tmp/litestream.tar.gz
+COPY --from=build /lib/**/libdl.so.2 /lib/libdl.so.2
+COPY --from=build /usr/bin/litestream /bin
+COPY --from=build /server.bin /
+COPY etc /etc
 
-# Notify Docker that the container wants to expose a port.
-# Pocketbase serve port
-# Use port 8080 for deploying to Fly.io, GCP Cloud Run, or AWS App Runner easily.
-EXPOSE 8080 
-# For the litestream server via Prometheus if using https://litestream.io/reference/config/#metrics
-# EXPOSE 9090 
-
-# Copy Litestream configuration file & startup script.
-COPY etc/litestream.yml /etc/litestream.yml
-COPY scripts/run.sh /scripts/run.sh
-
-RUN chmod +x /scripts/run.sh
-RUN chmod +x /usr/local/bin/litestream
-
-# Start Pocketbase
-CMD [ "/scripts/run.sh" ]
+EXPOSE 8080
+CMD ["ash", "/etc/server.sh"]

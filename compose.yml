@@ -1,0 +1,14 @@
+services:
+  server:
+    build:
+      context: .
+      target: final
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 200M
