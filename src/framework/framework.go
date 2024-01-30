@@ -15,11 +15,8 @@ type Framework struct {
 }
 
 func New() Framework {
-	Pb := pocketbase.NewWithConfig(pocketbase.Config{
-		DefaultDataDir: "../db",
-	})
 	return Framework{
-		Pb: Pb,
+		Pb: pocketbase.New(),
 	}
 }
 

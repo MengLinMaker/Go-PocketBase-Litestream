@@ -1,5 +1,5 @@
 dbs:
-  - path: /db/data.db
+  - path: ./pb_data/data.db
     replicas:
       - name: bucket_replica
         type: s3
@@ -7,7 +7,7 @@ dbs:
         bucket: ${S3_DATA_BUCKET}
         skip-verify: true
         sync-interval: 60s
-  - path: /db/logs.db
+  - path: ./pb_data/logs.db
     replicas:
       - name: bucket_replica
         type: s3
@@ -19,3 +19,4 @@ logging:
   level: error
   type: json
   stderr: false
+addr: ":9090"
