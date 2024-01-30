@@ -1,42 +1,34 @@
 package main
 
 import (
-	"log"
-	"os"
+	"fmt"
 	"runtime/debug"
 
+	"server.bin/framework"
+
 	echo "github.com/labstack/echo/v5"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
 )
 
-var app = pocketbase.NewWithConfig(pocketbase.Config{
-	DefaultDataDir: "../db",
-})
+var app = framework.New()
 
 func main() {
-	debug.SetGCPercent(10000)
-
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.GET("/hello", hello)
-		return nil
+	app.AddRoutes(func(e *core.ServeEvent) {
+		e.Router.GET("/hello", adminIdRoute)
 	})
-
-	if err := app.Start(); err != nil {
-		log.Fatal(err)
-	}
-
-	//app.Dao().DB().NewQuery(`PRAGMA journal_mode = WAL;`).SQL()
+	app.Start()
+	// Allow Litestream to capture all WAL
+	app.DB().NewQuery(`PRAGMA wal_autocheckpoint = 0;`).Execute()
+	// Limit Sqlite3 cache to 128MB RAM
+	app.DB().NewQuery(`PRAGMA cache_size = -131072000;`).Execute()
+	// Limit Go to 100MB RAM
+	debug.SetMemoryLimit(100000000)
 }
 
-func readFile(path string) string {
-	data, err := os.ReadFile(path)
+func adminIdRoute(c echo.Context) error {
+	a, err := app.Dao().FindAdminByEmail("menglinmaker@gmail.com")
 	if err != nil {
-		panic("Cannot read file: " + path)
+		fmt.Print("error", err)
 	}
-	return string(data)
-}
-
-func hello(c echo.Context) error {
-	return c.String(200, "Hello world!")
+	return c.String(200, a.Id)
 }
