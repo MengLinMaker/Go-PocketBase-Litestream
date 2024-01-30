@@ -9,6 +9,7 @@ services:
       - 8080:8080
     deploy:
       resources:
+        # Simulate 1 vCPU
         limits:
           cpus: '0.5'
-          memory: 200M
+          memory: 256M
