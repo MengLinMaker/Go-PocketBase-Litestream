@@ -16,7 +16,8 @@ COPY src/go.mod src/go.sum /
 RUN export GOPROXY=https://proxy.golang.org && \
     go mod download -x
 COPY src /
-RUN go build -x -o /server.bin /
+RUN export CGO_ENABLED=1 && \
+    go build -x -o /server.bin /
 
 # Minimise final stage docker image for production
 # Smallest glibc alternative to Apline
@@ -30,7 +31,7 @@ ENV LITESTREAM_ACCESS_KEY_ID \
     S3_LOGS_BUCKET \
     STAGE
 
-COPY --from=build /lib/**/libdl.so.2 /lib/libdl.so.2
+COPY --from=build /lib/**/libdl.so.2 /lib
 COPY --from=build /usr/bin/litestream /bin
 COPY --from=build /server.bin /
 COPY etc /etc
