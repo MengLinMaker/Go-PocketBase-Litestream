@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"runtime/debug"
 
 	"server.bin/framework"
@@ -15,6 +17,7 @@ var app = framework.New()
 func main() {
 	app.AddRoutes(func(e *core.ServeEvent) {
 		e.Router.GET("/hello", adminIdRoute)
+		e.Router.GET("/litestream", litestreamMetricsRoute)
 	})
 	app.Start()
 	// Allow Litestream to capture all WAL
@@ -31,4 +34,12 @@ func adminIdRoute(c echo.Context) error {
 		fmt.Print("error", err)
 	}
 	return c.String(200, a.Id)
+}
+
+func litestreamMetricsRoute(c echo.Context) error {
+	resp, err := http.Get("http://localhost:9090/metrics")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return c.Stream(200, "text/plain", resp.Body)
 }
