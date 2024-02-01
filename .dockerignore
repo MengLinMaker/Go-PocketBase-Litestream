@@ -1,5 +1,7 @@
 # Do not include database
-db
+src/pb_data
+# Do not include go packages
+src/vendor
 
 # Ignore binary
 **/*.bin
