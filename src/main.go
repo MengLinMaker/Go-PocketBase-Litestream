@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"runtime/debug"
 
 	"server.bin/framework"
 
 	echo "github.com/labstack/echo/v5"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -17,7 +17,8 @@ var app = framework.New()
 func main() {
 	app.AddRoutes(func(e *core.ServeEvent) {
 		e.Router.GET("/hello", adminIdRoute)
-		e.Router.GET("/litestream", litestreamMetricsRoute)
+		requireAdmin := apis.RequireAdminAuth()
+		e.Router.GET("/litestream", litestreamMetricsRoute, requireAdmin)
 	})
 	app.Start()
 	// Allow Litestream to capture all WAL
@@ -39,7 +40,7 @@ func adminIdRoute(c echo.Context) error {
 func litestreamMetricsRoute(c echo.Context) error {
 	resp, err := http.Get("http://localhost:9090/metrics")
 	if err != nil {
-		log.Fatalln(err)
+		return c.String(503, "Litestream is not running")
 	}
 	return c.Stream(200, "text/plain", resp.Body)
 }
