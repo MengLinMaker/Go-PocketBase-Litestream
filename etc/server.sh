@@ -13,4 +13,4 @@ else
   echo "Don't replicate DEV database"
 fi
 
-/server.bin serve --http="0.0.0.0:8080"
+/server.bin serve --http="0.0.0.0:8080" --dev
