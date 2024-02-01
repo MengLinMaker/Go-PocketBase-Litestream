@@ -32,6 +32,10 @@ primary_region = "syd"
     restart_limit = 0
     timeout = "1s"
 
+[[metrics]]
+  port = 9090
+  path = "/metrics"
+
 [[vm]]
   cpu_kind = "shared"
   cpus = 1
