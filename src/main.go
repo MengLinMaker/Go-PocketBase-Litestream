@@ -19,8 +19,7 @@ func main() {
 		e.Router.GET("/hello", adminIdRoute)
 		requireAdmin := apis.RequireAdminAuth()
 		e.Router.GET("/litestream", litestreamMetricsRoute, requireAdmin)
-	})
-	app.Start()
+	}).Start()
 	// Allow Litestream to capture all WAL
 	app.DB().NewQuery(`PRAGMA wal_autocheckpoint = 0;`).Execute()
 	// Limit Sqlite3 cache to 128MB RAM

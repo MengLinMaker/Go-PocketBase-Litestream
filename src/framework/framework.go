@@ -23,13 +23,14 @@ func New() Framework {
 
 type ServeEventHandler func(e *core.ServeEvent)
 
-func (f Framework) AddRoutes(handler ServeEventHandler) {
+func (f Framework) AddRoutes(handler ServeEventHandler) Framework {
 	f.Pb.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		logHttpRequests := apis.ActivityLogger(f.Pb)
 		e.Router.Use(logHttpRequests)
 		handler(e)
 		return nil
 	})
+	return f
 }
 
 func (f Framework) Start() {
