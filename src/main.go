@@ -20,7 +20,7 @@ func main() {
 			// Covers hourly Litestream backup
 			idleShutdown(75*time.Minute),
 		)
-		e.Router.GET("/hello", adminIdRoute)
+		e.Router.GET("/total_admins", totalAdminsRoute)
 		e.Router.GET("/litestream", litestreamMetricsRoute, apis.RequireAdminAuth())
 	}).Start()
 	// Allow Litestream to capture all WAL

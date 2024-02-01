@@ -7,12 +7,9 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-func adminIdRoute(c echo.Context) error {
-	a, err := app.Dao().FindAdminByEmail("menglinmaker@gmail.com")
-	if err != nil {
-		fmt.Print("error", err)
-	}
-	return c.String(200, a.Id)
+func totalAdminsRoute(c echo.Context) error {
+	totalAdmins, _ := app.Dao().TotalAdmins()
+	return c.String(200, fmt.Sprint(totalAdmins))
 }
 
 func litestreamMetricsRoute(c echo.Context) error {
