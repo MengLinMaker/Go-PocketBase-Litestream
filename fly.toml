@@ -7,8 +7,8 @@ app = "go-pocketbase-litestream"
 primary_region = "syd"
 
 [[mounts]]
-  source = "db"
-  destination = "/db"
+  source = "pb_data"
+  destination = "/pb_data"
   initial_size = "1GB"
   auto_extend_size_threshold = 90
   auto_extend_size_increment = "1GB"
@@ -23,15 +23,14 @@ primary_region = "syd"
 
   [http_service.concurrency]
     type = "requests"
-    hard_limit = 250
-    soft_limit = 200
+    hard_limit = 1000
+    soft_limit = 800
 
-  [[http_service.checks]]
-    timeout = "5s"
-    grace_period = "5s"
-    interval = "15s"
-    method = "GET"
-    path = "/_/"
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "60s"
+    restart_limit = 0
+    timeout = "1s"
 
 [[vm]]
   cpu_kind = "shared"
