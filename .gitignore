@@ -1,5 +1,7 @@
 # Do not include database
-db
+pb_data
+# Do not include go packages
+vendor
 
 .env
 .DS_Store
